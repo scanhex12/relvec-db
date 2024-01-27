@@ -1,0 +1,1 @@
+/usr/bin/c++ -rdynamic CMakeFiles/tests_kv.dir/test_persistent_kv.cpp.o -o tests_kv  ../persistent_kv/libPersistentKV.a 

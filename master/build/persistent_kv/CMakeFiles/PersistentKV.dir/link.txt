@@ -1,0 +1,2 @@
+/usr/bin/ar qc libPersistentKV.a CMakeFiles/PersistentKV.dir/file_editor.cpp.o CMakeFiles/PersistentKV.dir/flexible_page.cpp.o CMakeFiles/PersistentKV.dir/kv_storage.cpp.o
+/usr/bin/ranlib libPersistentKV.a

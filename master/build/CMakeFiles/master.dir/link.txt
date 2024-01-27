@@ -1,0 +1,1 @@
+/usr/bin/c++ -rdynamic CMakeFiles/master.dir/main.cpp.o -o master  /usr/lib/x86_64-linux-gnu/libPocoNet.so.62 /usr/lib/x86_64-linux-gnu/libPocoUtil.so.62 /usr/lib/x86_64-linux-gnu/libPocoJSON.so.62 -lLib /usr/lib/x86_64-linux-gnu/libPocoXML.so.62 /usr/lib/x86_64-linux-gnu/libPocoFoundation.so.62 -lpcre -lz -lpthread -ldl -lrt -lexpat 
