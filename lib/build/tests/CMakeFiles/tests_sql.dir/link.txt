@@ -1,0 +1,1 @@
+/usr/bin/c++ -rdynamic CMakeFiles/tests_sql.dir/test_sql.o -o tests_sql   -L/home/robertj/coursework3/lib/build/sql  ../sql/libshdb_core.a -lstdc++fs -lstdc++ -lrt 
