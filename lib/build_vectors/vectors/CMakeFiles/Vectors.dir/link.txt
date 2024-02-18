@@ -1,0 +1,2 @@
+/usr/bin/ar qc libVectors.a CMakeFiles/Vectors.dir/vec_operations.o CMakeFiles/Vectors.dir/knn_searcher.o CMakeFiles/Vectors.dir/hnsw.o CMakeFiles/Vectors.dir/lsh.o
+/usr/bin/ranlib libVectors.a

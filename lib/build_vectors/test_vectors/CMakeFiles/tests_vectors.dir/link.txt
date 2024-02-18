@@ -1,0 +1,1 @@
+/usr/bin/c++ -rdynamic CMakeFiles/tests_vectors.dir/test_vectors.o -o tests_vectors   -L/home/robertj/coursework3/lib/build_vectors/vectors  ../vectors/libVectors.a -lstdc++fs -lstdc++ -lrt 

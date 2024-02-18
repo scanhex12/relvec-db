@@ -1,0 +1,1 @@
+/usr/bin/c++ -rdynamic CMakeFiles/test_knn.dir/test_knn.o -o test_knn   -L/home/robertj/coursework3/lib/build_vectors/vectors  ../vectors/libVectors.a -lstdc++fs -lstdc++ -lrt 
