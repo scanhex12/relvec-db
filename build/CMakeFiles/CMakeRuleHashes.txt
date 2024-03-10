@@ -1,0 +1,3 @@
+# Hashes of file build rules.
+3aec4c30403b584cb8c5cea4b002f824 ../lib/sql/lexer.cpp
+edf16089c8e2d44a61b3309a5f518196 ../lib/sql/parser.cpp

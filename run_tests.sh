@@ -4,7 +4,9 @@ cd build && \
 cmake .. && \
 make && \
 cd tests && \
-./tests && \
+./tests_serialize && \
 cd ../master/tests && \
 ./tests_kv && \
+cd ../lib/tests && \
+./tests_sql && \
 cd ../../..

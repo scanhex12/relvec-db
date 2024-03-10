@@ -22,7 +22,7 @@ KVStorage::KVStorage(const char* filename) : filename_(filename), page_(Flixible
 }
 
 void KVStorage::set(std::string key, std::string value) {
-    values_[key] = value;
+    std::cout << "inside kv " << values_.size();
     if (key2index_.count(key)) {
         erase(key);
     }
@@ -32,6 +32,8 @@ void KVStorage::set(std::string key, std::string value) {
     assert(ret.first);
     ret = page_.insertRow(value);
     assert(ret.first);
+    values_[key] = value;
+    std::cout << "outside kv " << values_.size();
 }
  
 void KVStorage::erase(std::string key) {

@@ -17,17 +17,30 @@
 #include <Poco/JSON/Object.h>
 #include <Poco/Util/ServerApplication.h>
 #include <sstream>
+#include <memory>
 
 #include "../lib/serialize.h"
+#include "balancer.h"
 
 using namespace Poco;
 using namespace Poco::Net;
 using namespace Poco::JSON;
 using namespace Poco::Util;
 
+struct ServerConfig {
+    std::string masterHost;
+    int masterPort;
 
-class MyRequestHandler : public HTTPRequestHandler {
+    ServerConfig(const std::vector<std::string>& args) {
+        masterHost = args[0];
+        masterPort = std::stoi(args[1]);
+    } 
+};
+
+class MasterRequestHandler : public HTTPRequestHandler {
 public:
+    MasterRequestHandler(std::shared_ptr<Balancer> balancer): balancer_(balancer) {}
+
     void handleRequest(HTTPServerRequest& request, HTTPServerResponse& response) override {
         try {
             std::istream& requestStream = request.stream();
@@ -38,22 +51,51 @@ public:
             Parser parser;
             Poco::Dynamic::Var result = parser.parse(requestBody);
             Object::Ptr jsonObj = result.extract<Object::Ptr>();
-
-            auto query = jsonObj->get("query").convert<std::string>();
             std::string responseBody;
             Object::Ptr jsonRsp;
-            if (query.size() % 2 == 0) {
+
+            auto query_type = jsonObj->get("query_type").convert<std::string>();
+
+            if (query_type == "hearbeat") {
                 jsonRsp = new Object();
-                std::vector<size_t> targetChunks = {1,2,3};
-                auto encoded = NUtils::NSerialization::Serialize(targetChunks);
-                jsonRsp->set("chunks", encoded);
-            } else {
+                auto freeBytes = jsonObj->get("free_bytes").convert<int>();
+                auto chunkPort = jsonObj->get("chunk_port").convert<int>();
+                auto chunkHost = jsonObj->get("chunk_host").convert<std::string>();
+                balancer_->OnUpdate({chunkHost, chunkPort}, freeBytes);
+                jsonRsp->set("status", "OK");
+
+            } else if (query_type == "chunks_by_query") {
+                auto num_tables = jsonObj->get("num_tables").convert<int>();
                 jsonRsp = new Object();
-                std::vector<size_t> targetChunks = {4,5,6};
-                auto encoded = NUtils::NSerialization::Serialize(targetChunks);
-                jsonRsp->set("chunks", encoded);
+
+                for (size_t i = 0; i < num_tables; ++i) {
+                    auto commonKey = "table_" + std::to_string(i);
+                    auto table_i = jsonObj->get(commonKey).convert<std::string>();
+                    std::cout << "query to balancer\n";
+                    auto resultPartition = balancer_->GetPartition(table_i);
+                    std::cout << "end query to balancer\n";
+                    jsonRsp->set(commonKey + "_size", resultPartition.size());
+                    for (size_t j = 0; j < resultPartition.size(); ++j) {
+                        jsonRsp->set(commonKey + "_host_" + std::to_string(j), resultPartition[j].first.first);
+                        jsonRsp->set(commonKey + "_port_" + std::to_string(j), resultPartition[j].first.second);
+                    }
+                }
+            } else if (query_type == "insert_table") {
+                std::cout << "GOT REQUEST INSERT TABLE\n";
+                auto table = jsonObj->get("table").convert<std::string>();
+                auto tableSize = jsonObj->get("table_size").convert<int>();
+                jsonRsp = new Object();
+                jsonRsp->set("status", "OK");
+                std::cout << "try insert\n";
+                balancer_->InsertTable(table, tableSize);
+                std::cout << "OK\n";
+
+            } else if (query_type == "remove_table") {
+                auto table = jsonObj->get("table").convert<std::string>();
+                jsonRsp = new Object();
+                balancer_->EraseTable(table);
             }
-            
+
             std::ostringstream oss;
             jsonRsp->stringify(oss);
             responseBody = oss.str();
@@ -65,21 +107,30 @@ public:
             response.send();
         }
     }
+private:
+    std::shared_ptr<Balancer> balancer_;
 };
 
-class MyRequestHandlerFactory : public HTTPRequestHandlerFactory {
+class MasterRequestHandlerFactory : public HTTPRequestHandlerFactory {
 public:
+    MasterRequestHandlerFactory(std::shared_ptr<Balancer> balancer): balancer_(balancer) {}
+
     HTTPRequestHandler* createRequestHandler(const HTTPServerRequest&) override {
-        return new MyRequestHandler();
+        return new MasterRequestHandler(balancer_);
     }
+private:
+    std::shared_ptr<Balancer> balancer_;
 };
 
-class MyServerApp : public ServerApplication {
+class MasterServerApp : public ServerApplication {
 protected:
     int main(const std::vector<std::string>& args) override {
-        ServerSocket svs(12346);
+        auto config = std::make_shared<ServerConfig>(args);
+        auto balancer = std::make_shared<Balancer>("balancer_state.txt");
+
+        ServerSocket svs(config->masterPort);
         HTTPServerParams* params = new HTTPServerParams();
-        HTTPServer srv(new MyRequestHandlerFactory(), svs, params);
+        HTTPServer srv(new MasterRequestHandlerFactory(balancer), svs, params);
         srv.start();
         waitForTerminationRequest();
         srv.stop();
@@ -88,6 +139,6 @@ protected:
 };
 
 int main(int argc, char** argv) {
-    MyServerApp app;
+    MasterServerApp app;
     return app.run(argc, argv);
 }

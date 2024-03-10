@@ -7,47 +7,51 @@
 #include <Poco/JSON/Parser.h>
 #include <Poco/Dynamic/Var.h>
 
+#include <variant>
+#include <optional>
+
+#include <cassert>
 #include "../lib/serialize.h"
+#include "client_config.h"
+#include "client_getter.h"
+#include "../lib/sql/row.h"
+#include "../lib/sql/ast.h"
 
 #include <iostream>
+#include <string>
+#include <random>
 
 using namespace Poco;
 using namespace Poco::Net;
 using namespace Poco::JSON;
 
-std::vector<size_t> getChunkPorts(int masterPort, const std::string& query) {
-    Object::Ptr jsonObj = new Object();
-    jsonObj->set("query", query);
+int main(int argc, char** argv) {
+    auto config = std::make_shared<ClientConfig>(ClientConfig(argc, argv));
+    auto client = ClientGetter(config);
+    auto table = std::to_string(rand());
+    std::cout << "START TEST\n";
+    client.AddTableOnMaster(table, 10);
+    std::cout << "Added table on master!\n";
+    auto fixed_schema = std::make_shared<shdb::Schema>(shdb::Schema{
+    {"id", shdb::Type::uint64}, {"name", shdb::Type::varchar, 1024}, {"age", shdb::Type::uint64}, {"graduated", shdb::Type::boolean}});
+    std::cout << "Start creating table on chunk\n";
 
-    std::ostringstream oss;
-    jsonObj->stringify(oss);
-    std::string jsonStr = oss.str();
+    client.CreateTable(table, fixed_schema);
+    std::cout << "End creating table on chunk\n";
 
-    HTTPRequest req(HTTPRequest::HTTP_GET, "/endpoint", HTTPMessage::HTTP_1_1);
-    req.setContentType("application/json");
-    req.setContentLength(jsonStr.length());
-
-    HTTPClientSession session("localhost", masterPort);
-
-    std::ostream& os = session.sendRequest(req);
-    os << jsonStr;
-
-    HTTPResponse res;
-    std::istream& is = session.receiveResponse(res);
+    auto rows = std::vector<shdb::Row>{
+        {static_cast<int64_t>(0), static_cast<int64_t>(20), std::string("Ann"), true},
+        {static_cast<int64_t>(1), static_cast<int64_t>(21), std::string("Bob"), false},
+        {static_cast<int64_t>(2), static_cast<int64_t>(19), std::string("Sara"), true},
+        {static_cast<int64_t>(-2), static_cast<int64_t>(19), std::string("Sara"), true}};
     
-    Parser parser;
-    Poco::Dynamic::Var result = parser.parse(is);
-    Object::Ptr jsonObjResp = result.extract<Object::Ptr>();
-    
-    auto chunks = jsonObjResp->get("chunks").convert<std::string>();
-    std::cout << chunks.size()  << '\n' << chunks << std::endl;
-    return NUtils::NSerialization::Deserialize(chunks);
-}
-
-int main() {
-    auto chunks = getChunkPorts(12346, "");
-    std::cout << "CHUNK SIZE : " << chunks.size() << '\n';
-    for (auto elem : chunks) {
-        std::cout << elem << '\n';
+    std::cout << "start adding rows in chunks\n";
+    for (auto row: rows) {
+        client.InsertRowOnTable(table, row);
     }
+    std::cout << "adding rows in sucessfull\n";
+
+    auto predicted = client.GetTableContent(table);
+    assert(predicted == rows);
+    std::cout << "Correct!\n";
 }

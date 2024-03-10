@@ -58,6 +58,7 @@ template <typename T>
 inline void hashCombine(size_t & seed, const T & v)
 {
     seed ^= std::hash<T>()(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+
 }
 
 namespace std
@@ -77,6 +78,15 @@ public:
     size_t operator()(const shdb::Null &) const { return 0x12345678; }
 };
 
+/*
+template <>
+class hash<NVec::TVector>
+{
+public:
+    size_t operator()(const NVec::TVector &v) const { return v.CalcHash(); }
+};
+*/
+
 template <>
 class hash<shdb::Row>
 {
@@ -84,8 +94,9 @@ public:
     size_t operator()(const shdb::Row & row) const
     {
         size_t seed = 0;
-        for (const auto & value : row)
+        for (const auto & value : row) {
             hashCombine(seed, value);
+        }
         return seed;
     }
 };

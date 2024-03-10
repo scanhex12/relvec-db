@@ -1,0 +1,17 @@
+/home/robertj/coursework3/build/CMakeFiles/rebuild_cache.dir
+/home/robertj/coursework3/build/CMakeFiles/edit_cache.dir
+/home/robertj/coursework3/build/lib/CMakeFiles/rebuild_cache.dir
+/home/robertj/coursework3/build/lib/CMakeFiles/edit_cache.dir
+/home/robertj/coursework3/build/lib/CMakeFiles/Lib.dir
+/home/robertj/coursework3/build/lib/sql/CMakeFiles/rebuild_cache.dir
+/home/robertj/coursework3/build/lib/sql/CMakeFiles/edit_cache.dir
+/home/robertj/coursework3/build/lib/sql/CMakeFiles/shdb_core.dir
+/home/robertj/coursework3/build/master/CMakeFiles/rebuild_cache.dir
+/home/robertj/coursework3/build/master/CMakeFiles/edit_cache.dir
+/home/robertj/coursework3/build/master/CMakeFiles/master.dir
+/home/robertj/coursework3/build/chunk/CMakeFiles/rebuild_cache.dir
+/home/robertj/coursework3/build/chunk/CMakeFiles/edit_cache.dir
+/home/robertj/coursework3/build/chunk/CMakeFiles/chunk.dir
+/home/robertj/coursework3/build/client/CMakeFiles/rebuild_cache.dir
+/home/robertj/coursework3/build/client/CMakeFiles/edit_cache.dir
+/home/robertj/coursework3/build/client/CMakeFiles/client.dir

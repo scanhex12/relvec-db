@@ -1,4 +1,5 @@
 #include "schema.h"
+#include <sstream>
 
 namespace shdb
 {
@@ -71,6 +72,48 @@ std::ostream & operator<<(std::ostream & stream, const Schema & schema)
 {
     stream << toString(schema);
     return stream;
+}
+
+Schema deserializeSchema(const std::string& serializedSchema)
+{
+    Schema schema;
+    std::istringstream iss(serializedSchema);
+    std::string token;
+
+    while (std::getline(iss, token, ','))
+    {
+        std::istringstream tokenStream(token);
+        std::string columnName;
+        std::string typeName;
+        uint32_t length = 0;
+
+        tokenStream >> columnName >> typeName;
+
+        size_t pos = typeName.find('(');
+        if (pos != std::string::npos)
+        {
+            length = std::stoul(typeName.substr(pos + 1, typeName.size() - pos - 2));
+            typeName = typeName.substr(0, pos);
+        }
+
+        Type type;
+        if (typeName == "boolean")
+            type = Type::boolean;
+        else if (typeName == "uint64")
+            type = Type::uint64;
+        else if (typeName == "int64")
+            type = Type::int64;
+        else if (typeName == "varchar")
+            type = Type::varchar;
+        else if (typeName == "string")
+            type = Type::string;
+        else
+            throw std::runtime_error("Invalid type name");
+
+        schema.emplace_back(columnName, type, length);
+    }
+
+    return schema;
 }
 
 }

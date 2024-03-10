@@ -55,6 +55,9 @@ namespace NVec {
         long double CosineDistanceNaive(const TVector& a) const;
         long double CosineDistanceFast(const TVector& a) const;
 
+        int64_t CalcHash() const;
+
+        bool operator==(const TVector& b) const;
         //void SerializeVector(uint8_t *&data);
     };
 

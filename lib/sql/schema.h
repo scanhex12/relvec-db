@@ -15,6 +15,7 @@ enum class Type
     int64,
     varchar,
     string,
+    vector
 };
 
 using Types = std::vector<Type>;
@@ -67,4 +68,7 @@ static SchemePtr createSchema(std::vector<ColumnSchema> && column_schemas)
 std::string toString(const Schema & schema);
 
 std::ostream & operator<<(std::ostream & stream, const Schema & schema);
+
+Schema deserializeSchema(const std::string& serializedSchema);
+
 }

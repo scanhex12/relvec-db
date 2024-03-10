@@ -266,4 +266,22 @@ bool TVector::operator<(const TVector& a) const {
     return false;
 }
 
+int64_t TVector::CalcHash() const {
+    int64_t hsh = 0;
+    for (auto elem: values32_) {
+        hsh ^= static_cast<int64_t>(elem * 1000000);
+    }
+    for (auto elem: values64_) {
+        hsh ^= static_cast<int64_t>(elem * 1000000);
+    }
+    for (auto elem: values128_) {
+        hsh ^= static_cast<int64_t>(elem * 1000000);
+    }
+    return hsh;
+}
+
+bool TVector::operator==(const TVector& b) const {
+    return metadata_ == b.metadata_;
+}
+
 }
